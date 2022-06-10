@@ -1,35 +1,33 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 public class Target : MonoBehaviour
 {
     public int point;
     public Text textPoint;
-    G
+    private GameManager _gameManager;
+
     void Start()
     {
         textPoint.text = point.ToString();
+        _gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+
     }
 
     // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("CannonBall"))
+        if (other.gameObject.CompareTag("CannonBall"))
         {
+            Debug.Log("Hit");
             HitByCannonBall();
         }
     }
 
+
     void HitByCannonBall()
     {
-        
+        _gameManager.CurrentPoint += point;
+        Debug.Log("Hit cannon ball");
         Destroy(gameObject);
     }
 }

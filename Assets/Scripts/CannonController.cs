@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class CannonController : MonoBehaviour
 {
@@ -7,19 +7,23 @@ public class CannonController : MonoBehaviour
     [SerializeField] private Transform cannonBody;
     [SerializeField] private Transform firePoint;
     [SerializeField] private GameObject cannonBall;
-    public float maxPower;
-    public float currentPower;
+    public float maxForce;
+    public float currentForce;
     private GameManager _gameManager;
+    public Slider forceBar;
+
     private void Start()
     {
         _cam = Camera.main;
-        currentPower = 0;
-        -_gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        currentForce = 0;
+        _gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        forceBar.maxValue = maxForce;
+        forceBar.minValue = 0;
     }
 
     private void Update()
     {
-        LookAtTarget();
+        forceBar.value = currentForce;
         if (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0))
         {
             GetPower();
@@ -27,9 +31,14 @@ public class CannonController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonUp(0))
         {
-            Debug.Log(currentPower);
+            Debug.Log(currentForce);
             FireCannonBall();
         }
+    }
+
+    private void FixedUpdate()
+    {
+        LookAtTarget();
     }
 
     private void LookAtTarget()
@@ -41,18 +50,20 @@ public class CannonController : MonoBehaviour
 
     private void GetPower()
     {
-        if (currentPower < maxPower)
+        if (currentForce < maxForce)
         {
-            currentPower += 5 * Time.deltaTime;
+            currentForce += 5 * Time.deltaTime;
         }
     }
 
     private void FireCannonBall()
     {
-        
-        var newCannonBall = Instantiate(cannonBall, firePoint.position, Quaternion.identity);
-        newCannonBall.GetComponent<Rigidbody>().AddForce(firePoint.up * currentPower, ForceMode.Impulse);
-        currentPower = 0;
-        
+        if (_gameManager.CanFire)
+        {
+            var newCannonBall = Instantiate(cannonBall, firePoint.position, Quaternion.identity);
+            newCannonBall.GetComponent<Rigidbody>().AddForce(firePoint.up * currentForce, ForceMode.Impulse);
+            currentForce = 0;
+            _gameManager.CurrentCannonBalls--;
+        }
     }
 }
